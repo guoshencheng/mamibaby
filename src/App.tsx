@@ -54,20 +54,6 @@ const App = () => {
     }
   };
 
-  // 获取步骤提示文本
-  const getStepHint = () => {
-    switch (current) {
-      case 0:
-        return '💡 输入故事提示开始创作';
-      case 1:
-        return '💡 发送消息生成核心元素';
-      case 2:
-        return '💡 发送消息生成分镜详情';
-      default:
-        return '';
-    }
-  };
-
   return (
     <div className="app-container">
       {/* 顶部栏 */}
@@ -125,7 +111,6 @@ const App = () => {
         >
           上一步
         </Button>
-        <div className="step-hint">{getStepHint()}</div>
         <Button
           className="bottom-bar-btn"
           color="primary"
