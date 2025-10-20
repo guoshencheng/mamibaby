@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { Steps, Card, Button, Space, Typography, Row, Col, Alert } from 'antd';
+import { Button, ProgressBar, NoticeBar, Popup } from 'antd-mobile';
+import { RightOutline } from 'antd-mobile-icons';
 import type { StorySummary, StepTwoData, StoryboardDetail } from './types/story';
 import StepChat from './components/StepChat';
 import DataCard from './components/DataCard';
 import { validateAIConfig } from './config/ai';
-
-const { Title } = Typography;
+import './App.css';
 
 const App = () => {
   const [current, setCurrent] = useState(0);
   const [summary, setSummary] = useState<StorySummary | null>(null);
   const [elements, setElements] = useState<StepTwoData | null>(null);
   const [details, setDetails] = useState<StoryboardDetail[] | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   // 验证配置
   const configCheck = validateAIConfig();
@@ -53,90 +54,107 @@ const App = () => {
     }
   };
 
+  // 获取步骤提示文本
+  const getStepHint = () => {
+    switch (current) {
+      case 0:
+        return '💡 输入故事提示开始创作';
+      case 1:
+        return '💡 发送消息生成核心元素';
+      case 2:
+        return '💡 发送消息生成分镜详情';
+      default:
+        return '';
+    }
+  };
+
   return (
-    <div style={{ padding: '24px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
-        绘本故事生成器 🎨
-      </Title>
+    <div className="app-container">
+      {/* 顶部栏 */}
+      <div className="top-bar">
+        <div className="top-bar-left">
+          <div className="progress-indicator">第 {current + 1}/3 步</div>
+          <div className="progress-title">{steps[current].title}</div>
+        </div>
+        <Button
+          size="small"
+          color="primary"
+          fill="outline"
+          className="view-data-btn"
+          onClick={() => setDrawerVisible(true)}
+        >
+          <RightOutline /> 查看数据
+        </Button>
+      </div>
+
+      {/* 进度条 */}
+      <div className="progress-bar-wrapper">
+        <ProgressBar percent={((current + 1) / 3) * 100} />
+      </div>
 
       {/* 配置验证提示 */}
       {!configCheck.valid && (
-        <Alert
-          message="配置提醒"
-          description={
-            <div>
-              {configCheck.error}
-              <br />
-              请在项目根目录创建 <code>.env.local</code> 文件并配置：
-              <pre style={{ marginTop: '8px', backgroundColor: '#f5f5f5', padding: '8px' }}>
-                VITE_ALICLOUD_API_KEY=your-api-key
-                <br />
-                VITE_ALICLOUD_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-                <br />
-                VITE_ALICLOUD_MODEL=qwen-turbo
-              </pre>
-              配置完成后请重启开发服务器。
-            </div>
-          }
-          type="warning"
-          showIcon
-          closable
-          style={{ marginBottom: '24px' }}
-        />
+        <div className="config-notice">
+          <NoticeBar
+            content={`${configCheck.error} - 请在项目根目录创建 .env.local 文件并配置 VITE_ALICLOUD_API_KEY`}
+            color="alert"
+            closeable
+          />
+        </div>
       )}
 
-      {/* 步骤条 */}
-      <Card style={{ marginBottom: '16px' }}>
-        <Steps current={current} items={steps} />
-      </Card>
+      {/* 聊天区域 */}
+      <div className="chat-area">
+        <StepChat
+          step={current}
+          summary={summary}
+          setSummary={setSummary}
+          elements={elements}
+          setElements={setElements}
+          setDetails={setDetails}
+        />
+      </div>
 
-      {/* 主内容区域：左侧聊天 + 右侧数据卡片 */}
-      <Row gutter={16} style={{ flex: 1, minHeight: 0 }}>
-        {/* 左侧：聊天框 */}
-        <Col span={14} style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Card
-            title={`第 ${current + 1} 步：${steps[current].title}`}
-            style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}
-            bodyStyle={{ flex: 1, padding: 0, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}
-          >
-            <StepChat
-              step={current}
-              summary={summary}
-              setSummary={setSummary}
-              elements={elements}
-              setElements={setElements}
-              setDetails={setDetails}
-            />
-          </Card>
-        </Col>
+      {/* 底部固定操作栏 */}
+      <div className="bottom-bar">
+        <Button
+          className="bottom-bar-btn"
+          onClick={handlePrev}
+          disabled={current === 0}
+          size="small"
+        >
+          上一步
+        </Button>
+        <div className="step-hint">{getStepHint()}</div>
+        <Button
+          className="bottom-bar-btn"
+          color="primary"
+          onClick={handleNext}
+          disabled={!canGoNext()}
+          size="small"
+        >
+          {current === 2 ? '完成' : '下一步'}
+        </Button>
+      </div>
 
-        {/* 右侧：数据展示卡片 */}
-        <Col span={10} style={{ height: '100%' }}>
-          <DataCard
-            currentStep={current}
-            summary={summary}
-            elements={elements}
-            details={details}
-          />
-        </Col>
-      </Row>
-
-      {/* 底部：步骤控制按钮 */}
-      <Card style={{ marginTop: '16px' }}>
-        <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button onClick={handlePrev} disabled={current === 0}>
-            上一步
-          </Button>
-          <div style={{ color: '#999' }}>
-            {current === 0 && '💡 输入故事提示开始创作'}
-            {current === 1 && '💡 发送消息生成核心元素'}
-            {current === 2 && '💡 发送消息生成分镜详情'}
-          </div>
-          <Button type="primary" onClick={handleNext} disabled={!canGoNext()}>
-            {current === 2 ? '完成' : '下一步'}
-          </Button>
-        </Space>
-      </Card>
+      {/* 数据抽屉 */}
+      <Popup
+        visible={drawerVisible}
+        onMaskClick={() => setDrawerVisible(false)}
+        position="right"
+        bodyStyle={{
+          width: '85vw',
+          height: '100vh',
+        }}
+      >
+        <DataCard
+          currentStep={current}
+          summary={summary}
+          elements={elements}
+          details={details}
+          onClose={() => setDrawerVisible(false)}
+        />
+      </Popup>
     </div>
   );
 };

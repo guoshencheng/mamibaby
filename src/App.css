@@ -1,0 +1,129 @@
+/* App.css - 移动端应用主样式 */
+
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+/* 顶部栏 */
+.top-bar {
+  background: #fff;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.top-bar-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.progress-indicator {
+  font-size: 13px;
+  color: #999;
+  font-weight: 500;
+}
+
+.progress-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.view-data-btn {
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+/* 进度条区域 */
+.progress-bar-wrapper {
+  background: #fff;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* 配置提醒区域 */
+.config-notice {
+  flex-shrink: 0;
+}
+
+/* 聊天区域 */
+.chat-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+/* 底部固定操作栏 */
+.bottom-bar {
+  background: #fff;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+  flex-shrink: 0;
+  gap: 12px;
+  /* 安全区域适配 */
+  padding-bottom: calc(12px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+.bottom-bar-btn {
+  min-width: 70px;
+}
+
+.step-hint {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 数据抽屉 */
+.data-drawer {
+  height: 80vh;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.data-drawer .adm-popup-body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 375px) {
+  .progress-title {
+    font-size: 15px;
+  }
+
+  .step-hint {
+    font-size: 12px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .app-container {
+    max-width: 414px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+}
+

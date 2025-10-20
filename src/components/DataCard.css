@@ -1,0 +1,145 @@
+/* DataCard.css - 移动端数据卡片样式 */
+
+.data-card-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+/* 抽屉头部 */
+.data-card-header {
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.data-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-button {
+  padding: 4px;
+  color: #999;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* 内容区域 */
+.data-card-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+/* 空状态 */
+.data-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: #999;
+}
+
+/* 步骤一：故事概要 */
+.summary-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.summary-item {
+  margin-bottom: 16px;
+}
+
+.summary-item:last-child {
+  margin-bottom: 0;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* 步骤二和步骤三：使用 Collapse */
+.elements-section {
+  margin-bottom: 12px;
+}
+
+/* 自定义 List 样式 */
+.detail-list {
+  background: #fff;
+}
+
+.detail-list-item {
+  padding: 12px 16px;
+}
+
+.list-item-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.list-item-value {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Collapse 内容样式调整 */
+.collapse-content {
+  padding: 0;
+  background: #f8f8f8;
+}
+
+/* 分镜卡片 */
+.storyboard-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.storyboard-header {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 375px) {
+  .section-title {
+    font-size: 15px;
+  }
+
+  .summary-value,
+  .list-item-value {
+    font-size: 13px;
+  }
+}
+

@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Input, Button, Space, Avatar, Card, Typography, Spin } from 'antd';
-import { SendOutlined, UserOutlined, RobotOutlined } from '@ant-design/icons';
+import { Button, TextArea, DotLoading } from 'antd-mobile';
+import { SendOutline } from 'antd-mobile-icons';
 import type { ChatMessage } from '../types/story';
 import MarkdownRenderer from './MarkdownRenderer';
-
-const { TextArea } = Input;
-const { Text } = Typography;
+import './ChatBox.css';
 
 interface ChatBoxProps {
   messages: ChatMessage[];
@@ -32,16 +30,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
   const handleSend = () => {
     if (!inputValue.trim() || isLoading || disabled) return;
-    
+
     onSendMessage(inputValue.trim());
     setInputValue('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
   };
 
   const formatTime = (date: Date) => {
@@ -51,167 +42,114 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     });
   };
 
+  // 渲染用户头像
+  const renderUserAvatar = () => (
+    <div className="message-avatar user">👤</div>
+  );
+
+  // 渲染 AI 头像
+  const renderAssistantAvatar = () => (
+    <div className="message-avatar assistant">🤖</div>
+  );
+
   return (
-    <>
-      <style>
-        {`
-          @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-          }
-        `}
-      </style>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-        {/* 消息列表区域 */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '16px',
-            backgroundColor: '#f5f5f5',
-            minHeight: 0,
-          }}
-        >
-        {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
-            <RobotOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
-            <div>开始对话，创作您的绘本故事</div>
+    <div className="chatbox-container">
+      {/* 消息列表区域 */}
+      <div className="messages-area">
+        {messages.length === 0 && !isLoading && (
+          <div className="empty-state">
+            <div className="empty-icon">💬</div>
+            <div className="empty-text">开始对话，创作您的绘本故事</div>
           </div>
         )}
 
         {messages.map((message, index) => {
-          const isLatestAssistant = 
-            message.role === 'assistant' && 
-            index === messages.length - 1 && 
-            isLoading;
-          
+          const isLatestAssistant =
+            message.role === 'assistant' && index === messages.length - 1 && isLoading;
+
           return (
             <div
               key={message.id}
-              style={{
-                display: 'flex',
-                justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
-                marginBottom: '16px',
-              }}
+              className={`message-item ${message.role}`}
             >
-              {message.role === 'assistant' && (
-                <Avatar
-                  icon={<RobotOutlined />}
-                  style={{ backgroundColor: '#1890ff', marginRight: '8px' }}
-                />
-              )}
+              {message.role === 'assistant' && renderAssistantAvatar()}
 
-              <div style={{ maxWidth: '70%' }}>
-                <Card
-                  size="small"
-                  style={{
-                    backgroundColor: message.role === 'user' ? '#1890ff' : '#fff',
-                    color: message.role === 'user' ? '#fff' : '#000',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    border: isLatestAssistant ? '1px solid #1890ff' : undefined,
-                  }}
-                  bodyStyle={{ 
-                    padding: '12px 16px',
-                    lineHeight: '1.6',
-                  }}
+              <div className="message-content-wrapper">
+                <div
+                  className={`message-bubble ${message.role} ${
+                    isLatestAssistant ? 'loading' : ''
+                  }`}
                 >
                   {message.role === 'user' ? (
                     // 用户消息使用简单的文本显示
-                    <div 
-                      style={{ 
-                        whiteSpace: 'pre-wrap', 
-                        wordBreak: 'break-word',
-                        fontSize: '14px',
-                      }}
-                    >
-                      {message.content}
-                    </div>
+                    <div className="message-text">{message.content}</div>
                   ) : (
                     // AI 消息使用 Markdown 渲染
-                    <div style={{ fontSize: '14px' }}>
+                    <div className="message-markdown">
                       <MarkdownRenderer content={message.content} />
                     </div>
                   )}
                   {isLatestAssistant && (
-                    <span style={{ 
-                      display: 'inline-block',
-                      width: '8px',
-                      height: '14px',
-                      backgroundColor: '#1890ff',
-                      marginLeft: '4px',
-                      animation: 'blink 1s infinite',
-                    }} />
+                    <div className="typing-indicator">
+                      <span className="typing-dot"></span>
+                      <span className="typing-dot"></span>
+                      <span className="typing-dot"></span>
+                    </div>
                   )}
-                </Card>
-                <Text
-                  type="secondary"
-                  style={{
-                    fontSize: '12px',
-                    marginTop: '4px',
-                    display: 'block',
-                    textAlign: message.role === 'user' ? 'right' : 'left',
-                  }}
-                >
+                </div>
+                <div className="message-timestamp">
                   {formatTime(message.timestamp)}
                   {isLatestAssistant && ' · 生成中...'}
-                </Text>
+                </div>
               </div>
 
-              {message.role === 'user' && (
-                <Avatar
-                  icon={<UserOutlined />}
-                  style={{ backgroundColor: '#87d068', marginLeft: '8px' }}
-                />
-              )}
+              {message.role === 'user' && renderUserAvatar()}
             </div>
           );
         })}
 
         {isLoading && messages.length === 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
-            <Avatar
-              icon={<RobotOutlined />}
-              style={{ backgroundColor: '#1890ff', marginRight: '8px' }}
-            />
-            <Card size="small" bodyStyle={{ padding: '12px' }}>
-              <Space>
-                <Spin size="small" />
-                <span>正在思考...</span>
-              </Space>
-            </Card>
+          <div className="message-item assistant">
+            {renderAssistantAvatar()}
+            <div className="message-content-wrapper">
+              <div className="message-bubble assistant">
+                <DotLoading /> 正在思考...
+              </div>
+            </div>
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="messages-end" />
       </div>
 
       {/* 输入区域 */}
-      <div style={{ padding: '16px', backgroundColor: '#fff', borderTop: '1px solid #f0f0f0' }}>
-        <Space.Compact style={{ width: '100%' }}>
-          <TextArea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={placeholder}
-            disabled={disabled || isLoading}
-            autoSize={{ minRows: 1, maxRows: 4 }}
-            style={{ resize: 'none' }}
-          />
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={handleSend}
-            disabled={!inputValue.trim() || disabled || isLoading}
-            loading={isLoading}
-          >
-            发送
-          </Button>
-        </Space.Compact>
+      <div className="input-area">
+        <TextArea
+          className="input-textarea"
+          value={inputValue}
+          onChange={(val) => setInputValue(val)}
+          placeholder={placeholder}
+          disabled={disabled || isLoading}
+          autoSize={{ minRows: 1, maxRows: 4 }}
+          onEnterPress={(e) => {
+            if (!e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+        />
+        <Button
+          className="send-button"
+          color="primary"
+          onClick={handleSend}
+          disabled={!inputValue.trim() || disabled || isLoading}
+          loading={isLoading}
+        >
+          <SendOutline />
+        </Button>
       </div>
-      </div>
-    </>
+    </div>
   );
 };
 
 export default ChatBox;
-
