@@ -50,11 +50,11 @@
 
 **开发环境**：
 - 前端开发服务器: http://localhost:3001 (Vite Dev Server)
-- 后端 API 服务器: http://localhost:3000 (Express Server)
+- 后端 API 服务器: http://localhost:4000 (Express Server)
 - 前端通过 Vite 代理访问后端 API
 
 **生产环境**：
-- 统一服务: http://localhost:3000 (Express Server)
+- 统一服务: http://localhost:4000 (Express Server)
 - Express 同时提供静态文件服务和 API 服务
 
 **安全特性**：
@@ -162,7 +162,7 @@ pnpm dev
 
 # 或者分别启动
 pnpm dev:client  # 前端: http://localhost:3001
-pnpm dev:server  # 后端: http://localhost:3000
+pnpm dev:server  # 后端: http://localhost:4000
 ```
 
 访问 http://localhost:3001 即可使用应用
@@ -181,11 +181,11 @@ pnpm dev:server  # 后端: http://localhost:3000
 # 构建前后端
 pnpm build
 
-# 启动生产服务（端口 3000）
+# 启动生产服务（端口 4000）
 pnpm start
 ```
 
-生产环境访问: http://localhost:3000
+生产环境访问: http://localhost:4000
 
 ## 使用说明
 
@@ -325,7 +325,7 @@ NODE_ENV=production
 pnpm start
 ```
 
-生产环境会在端口 3000 同时提供前端页面和 API 服务
+生产环境会在端口 4000 同时提供前端页面和 API 服务
 
 ## 更新日志
 

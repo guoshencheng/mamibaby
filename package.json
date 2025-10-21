@@ -11,7 +11,15 @@
     "build:client": "tsc && vite build",
     "build:server": "tsc -p tsconfig.server.json",
     "start": "node dist/server/index.js",
-    "preview": "npm run build && npm start"
+    "preview": "npm run build && npm start",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop mamibaby",
+    "pm2:restart": "pm2 restart mamibaby",
+    "pm2:reload": "pm2 reload mamibaby",
+    "pm2:delete": "pm2 delete mamibaby",
+    "pm2:logs": "pm2 logs mamibaby",
+    "pm2:monit": "pm2 monit",
+    "deploy": "npm run build && npm run pm2:reload"
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.52",

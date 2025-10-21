@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction, IRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
@@ -23,7 +23,7 @@ import {
   fillPrompt,
 } from '../../src/prompts/storyPrompts.js';
 
-const router = Router();
+const router: IRouter = Router();
 
 // 所有路由都需要认证
 router.use(authMiddleware);

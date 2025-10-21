@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction, IRouter } from 'express';
 import { body, validationResult } from 'express-validator';
 import { generateToken } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 // 确保环境变量已加载
 dotenv.config();
 
-const router = Router();
+const router: IRouter = Router();
 
 const DEFAULT_USERNAME = process.env.DEFAULT_USERNAME || 'guest';
 const DEFAULT_PASSWORD = process.env.DEFAULT_PASSWORD || 'iamguest123';

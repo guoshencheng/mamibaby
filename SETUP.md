@@ -19,7 +19,7 @@ pnpm dev
 
 这个命令会同时启动：
 - 前端开发服务器: http://localhost:3001
-- 后端 API 服务器: http://localhost:3000
+- 后端 API 服务器: http://localhost:4000
 
 ## 第三步：登录使用
 
@@ -70,7 +70,7 @@ export NODE_ENV=production
 pnpm start
 ```
 
-访问 http://localhost:3000
+访问 http://localhost:4000
 
 ---
 
