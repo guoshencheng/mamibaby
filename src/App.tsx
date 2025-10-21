@@ -1,13 +1,15 @@
 import { useState, useRef } from 'react';
-import { Button, ProgressBar, NoticeBar, Popup } from 'antd-mobile';
+import { Button, ProgressBar, Popup, Toast } from 'antd-mobile';
 import { RightOutline } from 'antd-mobile-icons';
 import type { StorySummary, StepTwoData, StoryboardDetail } from './types/story';
 import StepChat, { StepChatRef } from './components/StepChat';
 import DataCard from './components/DataCard';
-import { validateAIConfig } from './config/ai';
+import LoginPage from './components/LoginPage';
+import { isAuthenticated, removeToken } from './services/authService';
 import './App.css';
 
 const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(isAuthenticated());
   const [current, setCurrent] = useState(0);
   const [summary, setSummary] = useState<StorySummary | null>(null);
   const [elements, setElements] = useState<StepTwoData | null>(null);
@@ -15,8 +17,30 @@ const App = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const stepChatRef = useRef<StepChatRef>(null);
 
-  // 验证配置
-  const configCheck = validateAIConfig();
+  // 登录成功处理
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  // 登出处理
+  const handleLogout = () => {
+    removeToken();
+    setIsLoggedIn(false);
+    // 重置所有状态
+    setCurrent(0);
+    setSummary(null);
+    setElements(null);
+    setDetails(null);
+    Toast.show({
+      icon: 'success',
+      content: '已退出登录',
+    });
+  };
+
+  // 如果未登录，显示登录页面
+  if (!isLoggedIn) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const steps = [
     {
@@ -63,32 +87,30 @@ const App = () => {
           <div className="progress-indicator">第 {current + 1}/3 步</div>
           <div className="progress-title">{steps[current].title}</div>
         </div>
-        <Button
-          size="small"
-          color="primary"
-          fill="outline"
-          className="view-data-btn"
-          onClick={() => setDrawerVisible(true)}
-        >
-          <RightOutline /> 查看数据
-        </Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button
+            size="small"
+            color="primary"
+            fill="outline"
+            className="view-data-btn"
+            onClick={() => setDrawerVisible(true)}
+          >
+            <RightOutline /> 查看数据
+          </Button>
+          <Button
+            size="small"
+            fill="outline"
+            onClick={handleLogout}
+          >
+            退出
+          </Button>
+        </div>
       </div>
 
       {/* 进度条 */}
       <div className="progress-bar-wrapper">
         <ProgressBar percent={((current + 1) / 3) * 100} />
       </div>
-
-      {/* 配置验证提示 */}
-      {!configCheck.valid && (
-        <div className="config-notice">
-          <NoticeBar
-            content={`${configCheck.error} - 请在项目根目录创建 .env.local 文件并配置 VITE_ALICLOUD_API_KEY`}
-            color="alert"
-            closeable
-          />
-        </div>
-      )}
 
       {/* 聊天区域 */}
       <div className="chat-area">

@@ -12,7 +12,7 @@ import {
   generateStorySummary,
   generateStoryElements,
   generateStoryboardDetails,
-} from '../services/storyService';
+} from '../services/apiClient';
 
 interface StepChatProps {
   step: number;
