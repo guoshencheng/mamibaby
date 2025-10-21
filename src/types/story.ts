@@ -81,6 +81,7 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   data?: any; // 附加的结构化数据
+  isError?: boolean; // 标记是否为错误消息
 }
 
 export interface StepChatState {

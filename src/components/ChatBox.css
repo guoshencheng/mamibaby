@@ -113,6 +113,12 @@
   border: 2px solid #1677ff;
 }
 
+.message-bubble.error {
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  color: #cf1322;
+}
+
 /* 用户消息纯文本 */
 .message-text {
   white-space: pre-wrap;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Toast, Collapse } from 'antd-mobile';
 import ChatBox from './ChatBox';
 import type {
@@ -23,14 +23,18 @@ interface StepChatProps {
   setDetails: (details: StoryboardDetail[]) => void;
 }
 
-const StepChat: React.FC<StepChatProps> = ({
+export interface StepChatRef {
+  triggerAutoMessage: () => void;
+}
+
+const StepChat = forwardRef<StepChatRef, StepChatProps>(({
   step,
   summary,
   setSummary,
   elements,
   setElements,
   setDetails,
-}) => {
+}, ref) => {
   // 为每个步骤维护独立的消息列表
   const [stepMessages, setStepMessages] = useState<Record<number, ChatMessage[]>>({
     0: [],
@@ -38,15 +42,17 @@ const StepChat: React.FC<StepChatProps> = ({
     2: [],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const hasAutoTriggered = useRef<Record<number, boolean>>({});
 
   // 添加消息到当前步骤的聊天记录
-  const addMessage = (role: 'user' | 'assistant', content: string, data?: any) => {
+  const addMessage = (role: 'user' | 'assistant', content: string, data?: any, isError?: boolean) => {
     const newMessage: ChatMessage = {
       id: `msg_${Date.now()}_${Math.random()}`,
       role,
       content,
       timestamp: new Date(),
       data,
+      isError,
     };
     setStepMessages((prev) => ({
       ...prev,
@@ -93,7 +99,9 @@ const StepChat: React.FC<StepChatProps> = ({
       console.error('生成故事概要失败:', error);
       addMessage(
         'assistant',
-        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`
+        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`,
+        undefined,
+        true // 标记为错误消息
       );
       Toast.show({
         icon: 'fail',
@@ -147,7 +155,9 @@ const StepChat: React.FC<StepChatProps> = ({
       console.error('生成核心元素失败:', error);
       addMessage(
         'assistant',
-        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`
+        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`,
+        undefined,
+        true // 标记为错误消息
       );
       Toast.show({
         icon: 'fail',
@@ -206,7 +216,9 @@ const StepChat: React.FC<StepChatProps> = ({
       console.error('生成分镜详情失败:', error);
       addMessage(
         'assistant',
-        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`
+        `抱歉，生成失败了：${error instanceof Error ? error.message : '未知错误'}`,
+        undefined,
+        true // 标记为错误消息
       );
       Toast.show({
         icon: 'fail',
@@ -260,6 +272,18 @@ const StepChat: React.FC<StepChatProps> = ({
       default:
         addMessage('assistant', '未知的步骤');
     }
+  };
+
+  // 处理重新生成
+  const handleRetry = async () => {
+    // 自动发送"重新生成"消息
+    const retryMessage = step === 0 
+      ? '重新生成故事概要'
+      : step === 1
+      ? '重新生成核心元素'
+      : '重新生成分镜详情';
+    
+    await handleSendMessage(retryMessage);
   };
 
   // 上下文信息卡片组件
@@ -317,6 +341,41 @@ const StepChat: React.FC<StepChatProps> = ({
     }
   };
 
+  // 自动触发消息的方法
+  const triggerAutoMessage = () => {
+    // 只在第二步和第三步自动触发
+    if (step === 1 || step === 2) {
+      // 检查是否已经触发过该步骤
+      if (!hasAutoTriggered.current[step]) {
+        hasAutoTriggered.current[step] = true;
+        
+        // 自动发送触发消息
+        const autoMessage = step === 1 
+          ? '开始生成核心元素'
+          : '开始生成分镜详情';
+        
+        handleSendMessage(autoMessage);
+      }
+    }
+  };
+
+  // 暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    triggerAutoMessage,
+  }));
+
+  // 监听步骤变化，自动触发
+  useEffect(() => {
+    if (step === 1 || step === 2) {
+      // 使用 setTimeout 确保组件完全渲染后再触发
+      const timer = setTimeout(() => {
+        triggerAutoMessage();
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* 上下文信息卡片 */}
@@ -330,10 +389,13 @@ const StepChat: React.FC<StepChatProps> = ({
           isLoading={isLoading}
           placeholder={getPlaceholder()}
           disabled={false}
+          onRetry={handleRetry}
         />
       </div>
     </div>
   );
-};
+});
+
+StepChat.displayName = 'StepChat';
 
 export default StepChat;

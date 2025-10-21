@@ -11,6 +11,7 @@ interface ChatBoxProps {
   isLoading: boolean;
   placeholder?: string;
   disabled?: boolean;
+  onRetry?: () => void; // 重新生成的回调
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -19,6 +20,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   isLoading,
   placeholder = '请输入消息...',
   disabled = false,
+  onRetry,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,6 +54,13 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     <div className="message-avatar assistant">🤖</div>
   );
 
+  // 处理重新生成
+  const handleRetry = () => {
+    if (onRetry) {
+      onRetry();
+    }
+  };
+
   return (
     <div className="chatbox-container">
       {/* 消息列表区域 */}
@@ -66,6 +75,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         {messages.map((message, index) => {
           const isLatestAssistant =
             message.role === 'assistant' && index === messages.length - 1 && isLoading;
+          const isErrorMessage = message.isError && message.role === 'assistant';
 
           return (
             <div
@@ -78,7 +88,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                 <div
                   className={`message-bubble ${message.role} ${
                     isLatestAssistant ? 'loading' : ''
-                  }`}
+                  } ${isErrorMessage ? 'error' : ''}`}
                 >
                   {message.role === 'user' ? (
                     // 用户消息使用简单的文本显示
@@ -97,6 +107,18 @@ const ChatBox: React.FC<ChatBoxProps> = ({
                     </div>
                   )}
                 </div>
+                {isErrorMessage && onRetry && (
+                  <Button
+                    size="small"
+                    color="primary"
+                    fill="outline"
+                    onClick={handleRetry}
+                    disabled={isLoading}
+                    style={{ marginTop: '8px' }}
+                  >
+                    🔄 重新生成
+                  </Button>
+                )}
                 <div className="message-timestamp">
                   {formatTime(message.timestamp)}
                   {isLatestAssistant && ' · 生成中...'}

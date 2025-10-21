@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button, ProgressBar, NoticeBar, Popup } from 'antd-mobile';
 import { RightOutline } from 'antd-mobile-icons';
 import type { StorySummary, StepTwoData, StoryboardDetail } from './types/story';
-import StepChat from './components/StepChat';
+import StepChat, { StepChatRef } from './components/StepChat';
 import DataCard from './components/DataCard';
 import { validateAIConfig } from './config/ai';
 import './App.css';
@@ -13,6 +13,7 @@ const App = () => {
   const [elements, setElements] = useState<StepTwoData | null>(null);
   const [details, setDetails] = useState<StoryboardDetail[] | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const stepChatRef = useRef<StepChatRef>(null);
 
   // 验证配置
   const configCheck = validateAIConfig();
@@ -92,6 +93,7 @@ const App = () => {
       {/* 聊天区域 */}
       <div className="chat-area">
         <StepChat
+          ref={stepChatRef}
           step={current}
           summary={summary}
           setSummary={setSummary}
