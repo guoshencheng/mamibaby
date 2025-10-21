@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { Button, TextArea, DotLoading } from 'antd-mobile';
-import { SendOutline } from 'antd-mobile-icons';
+import { useRef, useEffect } from 'react';
+import { Button } from 'antd-mobile';
+import { Bubble, Sender } from '@ant-design/x';
 import type { ChatMessage } from '../types/story';
 import MarkdownRenderer from './MarkdownRenderer';
 import './ChatBox.css';
@@ -12,6 +12,7 @@ interface ChatBoxProps {
   placeholder?: string;
   disabled?: boolean;
   onRetry?: () => void; // 重新生成的回调
+  step?: number; // 当前步骤，用于重置输入框
 }
 
 const ChatBox: React.FC<ChatBoxProps> = ({
@@ -21,21 +22,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   placeholder = '请输入消息...',
   disabled = false,
   onRetry,
+  step = 0,
 }) => {
-  const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // 自动滚动到底部
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const handleSend = () => {
-    if (!inputValue.trim() || isLoading || disabled) return;
-
-    onSendMessage(inputValue.trim());
-    setInputValue('');
-  };
 
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString('zh-CN', {
@@ -65,79 +59,65 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     <div className="chatbox-container">
       {/* 消息列表区域 */}
       <div className="messages-area">
-        {messages.length === 0 && !isLoading && (
+        {messages.length === 0 && !isLoading ? (
           <div className="empty-state">
             <div className="empty-icon">💬</div>
             <div className="empty-text">开始对话，创作您的绘本故事</div>
           </div>
-        )}
+        ) : (
+          <div className="messages-list">
+            {messages.map((message, index) => {
+              const isLatestAssistant =
+                message.role === 'assistant' && index === messages.length - 1 && isLoading;
+              const isErrorMessage = message.isError && message.role === 'assistant';
 
-        {messages.map((message, index) => {
-          const isLatestAssistant =
-            message.role === 'assistant' && index === messages.length - 1 && isLoading;
-          const isErrorMessage = message.isError && message.role === 'assistant';
-
-          return (
-            <div
-              key={message.id}
-              className={`message-item ${message.role}`}
-            >
-              {message.role === 'assistant' && renderAssistantAvatar()}
-
-              <div className="message-content-wrapper">
+              return (
                 <div
-                  className={`message-bubble ${message.role} ${
-                    isLatestAssistant ? 'loading' : ''
-                  } ${isErrorMessage ? 'error' : ''}`}
+                  key={message.id}
+                  className={`message-item ${message.role}`}
                 >
-                  {message.role === 'user' ? (
-                    // 用户消息使用简单的文本显示
-                    <div className="message-text">{message.content}</div>
-                  ) : (
-                    // AI 消息使用 Markdown 渲染
-                    <div className="message-markdown">
-                      <MarkdownRenderer content={message.content} />
-                    </div>
-                  )}
-                  {isLatestAssistant && (
-                    <div className="typing-indicator">
-                      <span className="typing-dot"></span>
-                      <span className="typing-dot"></span>
-                      <span className="typing-dot"></span>
-                    </div>
-                  )}
-                </div>
-                {isErrorMessage && onRetry && (
-                  <Button
-                    size="small"
-                    color="primary"
-                    fill="outline"
-                    onClick={handleRetry}
-                    disabled={isLoading}
-                    style={{ marginTop: '8px' }}
-                  >
-                    🔄 重新生成
-                  </Button>
-                )}
-                <div className="message-timestamp">
-                  {formatTime(message.timestamp)}
-                  {isLatestAssistant && ' · 生成中...'}
-                </div>
-              </div>
+                  {message.role === 'assistant' && renderAssistantAvatar()}
 
-              {message.role === 'user' && renderUserAvatar()}
-            </div>
-          );
-        })}
+                  <div className="message-content-wrapper">
+                    <Bubble
+                      placement={message.role === 'user' ? 'end' : 'start'}
+                      typing={isLatestAssistant}
+                      variant={isErrorMessage ? 'outlined' : undefined}
+                      classNames={{
+                        content: isErrorMessage ? 'bubble-error' : undefined,
+                      }}
+                      content={
+                        message.role === 'user' ? (
+                          <div className="message-text">{message.content}</div>
+                        ) : (
+                          <div className="message-markdown">
+                            <MarkdownRenderer content={message.content} />
+                          </div>
+                        )
+                      }
+                    />
+                    {isErrorMessage && onRetry && (
+                      <Button
+                        size="small"
+                        color="primary"
+                        fill="outline"
+                        onClick={handleRetry}
+                        disabled={isLoading}
+                        style={{ marginTop: '8px' }}
+                      >
+                        🔄 重新生成
+                      </Button>
+                    )}
+                    <div className="message-timestamp">
+                      {formatTime(message.timestamp)}
+                      {isLatestAssistant && ' · 生成中...'}
+                    </div>
+                  </div>
 
-        {isLoading && messages.length === 0 && (
-          <div className="message-item assistant">
-            {renderAssistantAvatar()}
-            <div className="message-content-wrapper">
-              <div className="message-bubble assistant">
-                <DotLoading /> 正在思考...
-              </div>
-            </div>
+                  {message.role === 'user' && renderUserAvatar()}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -146,29 +126,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
       {/* 输入区域 */}
       <div className="input-area">
-        <TextArea
-          className="input-textarea"
-          value={inputValue}
-          onChange={(val) => setInputValue(val)}
+        <Sender
+          key={`sender-${step}`}
           placeholder={placeholder}
           disabled={disabled || isLoading}
-          autoSize={{ minRows: 1, maxRows: 4 }}
-          onEnterPress={(e) => {
-            if (!e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-        />
-        <Button
-          className="send-button"
-          color="primary"
-          onClick={handleSend}
-          disabled={!inputValue.trim() || disabled || isLoading}
           loading={isLoading}
-        >
-          <SendOutline />
-        </Button>
+          onSubmit={onSendMessage}
+          className="chat-sender"
+        />
       </div>
     </div>
   );

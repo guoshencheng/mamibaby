@@ -278,10 +278,10 @@ const StepChat = forwardRef<StepChatRef, StepChatProps>(({
   const handleRetry = async () => {
     // 自动发送"重新生成"消息
     const retryMessage = step === 0 
-      ? '重新生成故事概要'
+      ? '生成故事概要'
       : step === 1
-      ? '重新生成核心元素'
-      : '重新生成分镜详情';
+      ? '生成核心元素'
+      : '生成分镜详情';
     
     await handleSendMessage(retryMessage);
   };
@@ -384,6 +384,7 @@ const StepChat = forwardRef<StepChatRef, StepChatProps>(({
       {/* 聊天框 */}
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <ChatBox
+          step={step}
           messages={stepMessages[step] || []}
           onSendMessage={handleSendMessage}
           isLoading={isLoading}
