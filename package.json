@@ -2,7 +2,6 @@
   "name": "mamibaby",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm:dev:client\" \"npm:dev:server\"",
     "dev:client": "vite --port 3001",
@@ -12,7 +11,7 @@
     "build:server": "tsc -p tsconfig.server.json",
     "start": "node dist/server/index.js",
     "preview": "npm run build && npm start",
-    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:start": "pm2 start ecosystem.config.cjs --env production",
     "pm2:stop": "pm2 stop mamibaby",
     "pm2:restart": "pm2 restart mamibaby",
     "pm2:reload": "pm2 reload mamibaby",
