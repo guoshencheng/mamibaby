@@ -150,6 +150,53 @@ const DataCard: React.FC<DataCardProps> = ({
         return false;
     }
   };
+
+  // 复制单个数据项
+  const copyItem = async (content: string, itemName: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      Toast.show({
+        icon: 'success',
+        content: `已复制 ${itemName}`,
+      });
+    } catch (error) {
+      console.error('复制失败:', error);
+      Toast.show({
+        icon: 'fail',
+        content: '复制失败，请重试',
+      });
+    }
+  };
+
+  // 为人物生成 Markdown
+  const characterToMarkdown = (character: any) => {
+    return `### ${character.name}\n\n- **ID**: ${character.id}\n- **外貌**: ${character.appearance}\n- **衣物**: ${character.clothing}\n- **性格**: ${character.personality}`;
+  };
+
+  // 为物品生成 Markdown
+  const itemToMarkdown = (item: any) => {
+    return `### ${item.name}\n\n- **ID**: ${item.id}\n- **描述**: ${item.description}\n- **特征**: ${item.features}`;
+  };
+
+  // 为场景生成 Markdown
+  const sceneToMarkdown = (scene: any) => {
+    return `### ${scene.name}\n\n- **ID**: ${scene.id}\n- **环境**: ${scene.environment}\n- **时间**: ${scene.time}\n- **氛围**: ${scene.atmosphere}`;
+  };
+
+  // 为分镜概要生成 Markdown
+  const storyboardSummaryToMarkdown = (storyboard: any) => {
+    let md = `### 分镜 ${storyboard.sequence}\n\n- **ID**: ${storyboard.id}\n- **场景**: ${storyboard.sceneDescription}`;
+    if (storyboard.dialogue) {
+      md += `\n- **对话**: ${storyboard.dialogue}`;
+    }
+    return md;
+  };
+
+  // 为分镜详情生成 Markdown
+  const detailToMarkdown = (detail: any, index: number) => {
+    return `## 🎬 分镜详情 ${index + 1}\n\n- **ID**: ${detail.id}\n- **关联分镜**: ${detail.summaryId}\n\n### 详细描述\n\n${detail.detailedDescription}\n\n### 镜头角度\n\n${detail.cameraAngle}\n\n### 人物动作\n\n${detail.characterActions}\n\n### 视觉元素\n\n${detail.visualElements}`;
+  };
+
   // 第一步：显示故事概要
   const renderStepOne = () => {
     if (!summary) {
@@ -164,11 +211,31 @@ const DataCard: React.FC<DataCardProps> = ({
       <div className="summary-section">
         <div className="section-title">故事概要</div>
         <div className="summary-item">
-          <div className="summary-label">用户提示</div>
+          <div className="summary-label-with-copy">
+            <span className="summary-label">用户提示</span>
+            <Button
+              size="mini"
+              fill="none"
+              onClick={() => copyItem(summary.prompt, '用户提示')}
+              style={{ padding: '2px 8px', fontSize: '12px' }}
+            >
+              复制
+            </Button>
+          </div>
           <div className="summary-value">{summary.prompt}</div>
         </div>
         <div className="summary-item">
-          <div className="summary-label">生成的概要</div>
+          <div className="summary-label-with-copy">
+            <span className="summary-label">生成的概要</span>
+            <Button
+              size="mini"
+              fill="none"
+              onClick={() => copyItem(summary.summary, '概要')}
+              style={{ padding: '2px 8px', fontSize: '12px' }}
+            >
+              复制
+            </Button>
+          </div>
           <div className="summary-value">{summary.summary}</div>
         </div>
       </div>
@@ -193,8 +260,16 @@ const DataCard: React.FC<DataCardProps> = ({
             <List className="detail-list">
               {elements.characters.map((character) => (
                 <List.Item key={character.id}>
-                  <div className="list-item-label">
+                  <div className="list-item-header">
                     <strong>{character.name}</strong>
+                    <Button
+                      size="mini"
+                      fill="none"
+                      onClick={() => copyItem(characterToMarkdown(character), character.name)}
+                      style={{ padding: '2px 8px', fontSize: '12px' }}
+                    >
+                      复制
+                    </Button>
                   </div>
                   <div className="list-item-value">
                     <div>外貌：{character.appearance}</div>
@@ -211,8 +286,16 @@ const DataCard: React.FC<DataCardProps> = ({
             <List className="detail-list">
               {elements.keyItems.map((item) => (
                 <List.Item key={item.id}>
-                  <div className="list-item-label">
+                  <div className="list-item-header">
                     <strong>{item.name}</strong>
+                    <Button
+                      size="mini"
+                      fill="none"
+                      onClick={() => copyItem(itemToMarkdown(item), item.name)}
+                      style={{ padding: '2px 8px', fontSize: '12px' }}
+                    >
+                      复制
+                    </Button>
                   </div>
                   <div className="list-item-value">
                     <div>描述：{item.description}</div>
@@ -228,8 +311,16 @@ const DataCard: React.FC<DataCardProps> = ({
             <List className="detail-list">
               {elements.sceneFeatures.map((scene) => (
                 <List.Item key={scene.id}>
-                  <div className="list-item-label">
+                  <div className="list-item-header">
                     <strong>{scene.name}</strong>
+                    <Button
+                      size="mini"
+                      fill="none"
+                      onClick={() => copyItem(sceneToMarkdown(scene), scene.name)}
+                      style={{ padding: '2px 8px', fontSize: '12px' }}
+                    >
+                      复制
+                    </Button>
                   </div>
                   <div className="list-item-value">
                     <div>环境：{scene.environment}</div>
@@ -249,8 +340,16 @@ const DataCard: React.FC<DataCardProps> = ({
             <List className="detail-list">
               {elements.storyboardSummaries.map((storyboard) => (
                 <List.Item key={storyboard.id}>
-                  <div className="list-item-label">
+                  <div className="list-item-header">
                     <strong>分镜 {storyboard.sequence}</strong>
+                    <Button
+                      size="mini"
+                      fill="none"
+                      onClick={() => copyItem(storyboardSummaryToMarkdown(storyboard), `分镜 ${storyboard.sequence}`)}
+                      style={{ padding: '2px 8px', fontSize: '12px' }}
+                    >
+                      复制
+                    </Button>
                   </div>
                   <div className="list-item-value">
                     <div>场景：{storyboard.sceneDescription}</div>
@@ -279,7 +378,25 @@ const DataCard: React.FC<DataCardProps> = ({
       <div className="elements-section">
         <Collapse accordion>
           {details.map((detail, index) => (
-            <Collapse.Panel key={detail.id} title={`🎬 分镜详情 ${index + 1}`}>
+            <Collapse.Panel 
+              key={detail.id} 
+              title={
+                <div className="collapse-title-with-copy">
+                  <span>🎬 分镜详情 {index + 1}</span>
+                  <Button
+                    size="mini"
+                    fill="none"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyItem(detailToMarkdown(detail, index), `分镜详情 ${index + 1}`);
+                    }}
+                    style={{ padding: '2px 8px', fontSize: '12px' }}
+                  >
+                    复制
+                  </Button>
+                </div>
+              }
+            >
               <List className="detail-list">
                 <List.Item>
                   <div className="list-item-label">关联分镜</div>

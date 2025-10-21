@@ -75,6 +75,13 @@
   margin-bottom: 6px;
 }
 
+.summary-label-with-copy {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
 .summary-value {
   font-size: 14px;
   color: #333;
@@ -102,10 +109,24 @@
   margin-bottom: 4px;
 }
 
+.list-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .list-item-value {
   font-size: 14px;
   color: #333;
   line-height: 1.5;
+}
+
+.collapse-title-with-copy {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 /* Collapse 内容样式调整 */
