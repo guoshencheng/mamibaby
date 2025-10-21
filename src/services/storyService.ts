@@ -201,12 +201,14 @@ export const generateStoryElements = async (
 /**
  * 生成分镜详情（流式 + 工具调用）
  * @param summaries 第二步生成的分镜概要列表
+ * @param elements 第二步生成的核心元素（人物、物品、场景）
  * @param historyMessages 历史消息
  * @param onUpdate 流式更新回调
  * @returns 分镜详情列表
  */
 export const generateStoryboardDetails = async (
   summaries: StoryboardSummary[],
+  elements: StepTwoData,
   historyMessages: ChatMessage[] = [],
   onUpdate?: (text: string) => void
 ): Promise<StoryboardDetail[]> => {
@@ -225,8 +227,26 @@ export const generateStoryboardDetails = async (
       .map(s => `[分镜${s.sequence}] ${s.sceneDescription}${s.dialogue ? ` - 对话："${s.dialogue}"` : ''}`)
       .join('\n');
 
+    // 将人物信息格式化为字符串
+    const charactersText = elements.characters
+      .map(c => `【${c.name}】\n- 外貌：${c.appearance}\n- 衣物：${c.clothing}\n- 性格：${c.personality}`)
+      .join('\n\n');
+
+    // 将物品信息格式化为字符串
+    const keyItemsText = elements.keyItems
+      .map(i => `【${i.name}】\n- 描述：${i.description}\n- 特征：${i.features}`)
+      .join('\n\n');
+
+    // 将场景信息格式化为字符串
+    const sceneFeaturesText = elements.sceneFeatures
+      .map(s => `【${s.name}】\n- 环境：${s.environment}\n- 时间：${s.time}\n- 氛围：${s.atmosphere}`)
+      .join('\n\n');
+
     const userPrompt = fillPrompt(STEP3_USER_PROMPT, {
       storyboardSummaries: summariesText,
+      characters: charactersText,
+      keyItems: keyItemsText,
+      sceneFeatures: sceneFeaturesText,
     });
     
     let capturedDetails: StoryboardDetail[] | null = null;
@@ -240,6 +260,7 @@ export const generateStoryboardDetails = async (
     const result = streamText({
       model: alicloud(getModelName()),
       system: STEP3_SYSTEM_PROMPT,
+      stopWhen: stepCountIs(20),
       messages,
       tools: {
         submitStoryboardDetails: {

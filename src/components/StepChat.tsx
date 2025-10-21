@@ -179,6 +179,7 @@ const StepChat: React.FC<StepChatProps> = ({
       // 调用 AI 生成分镜详情，传入历史消息和流式更新回调
       const result = await generateStoryboardDetails(
         elements.storyboardSummaries,
+        elements, // 传入完整的 elements 对象，包含人物、物品、场景信息
         historyMessages,
         (streamText) => {
           // 实时更新消息内容（只显示思考过程）
